@@ -1,0 +1,627 @@
+<title>Democratic Chess</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Chess, but the monarchy has been abolished. Presidents, Oligarchs, Media, Lawyers, Lobbyists, Bureaucrats and Citizens who don't always agree with each other.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@75..150,500..900&family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: an official ballot form. Masthead + referendum box, then board beside a "Daily Ballot" news panel, then the new constitution. */
+:root{
+  --bg:#ECEFF3; --surface:#FAFBFC; --ink:#1C2333; --muted:#5B6476; --rule:#C6CDD8;
+  --sq-light:#F6F7F9; --sq-dark:#C2CBD8;
+  --accent:#5B2A86; --accent-soft:rgba(91,42,134,.16);
+  --alert:#B3261E; --alert-soft:rgba(179,38,30,.22); --ok:#2E7D4F;
+  --a-fill:#FFFFFF; --a-ink:#1C2333; --a-edge:#1C2333;
+  --b-fill:#232A3D; --b-ink:#F1F3F6; --b-edge:#0E121C;
+  --last:rgba(91,42,134,.22);
+  --pine:#E8B21E; --anch:#5F86B0;
+  --f-display:"Anybody","Arial Narrow",Impact,sans-serif;
+  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11141B; --surface:#191E28; --ink:#E5E8EE; --muted:#9AA3B3; --rule:#2D3443;
+  --sq-light:#3B4354; --sq-dark:#262C39;
+  --accent:#B98DE6; --accent-soft:rgba(185,141,230,.2);
+  --alert:#F0786C; --alert-soft:rgba(240,120,108,.3); --ok:#6CC495;
+  --a-fill:#F1F3F6; --a-ink:#1C2333; --a-edge:#F1F3F6;
+  --b-fill:#0A0C11; --b-ink:#E5E8EE; --b-edge:#7D879A;
+  --last:rgba(185,141,230,.25);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#11141B; --surface:#191E28; --ink:#E5E8EE; --muted:#9AA3B3; --rule:#2D3443;
+  --sq-light:#3B4354; --sq-dark:#262C39;
+  --accent:#B98DE6; --accent-soft:rgba(185,141,230,.2);
+  --alert:#F0786C; --alert-soft:rgba(240,120,108,.3); --ok:#6CC495;
+  --a-fill:#F1F3F6; --a-ink:#1C2333; --a-edge:#F1F3F6;
+  --b-fill:#0A0C11; --b-ink:#E5E8EE; --b-edge:#7D879A;
+  --last:rgba(185,141,230,.25);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:40px}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.mast{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:28px;align-items:end;border-bottom:3px double var(--rule);padding-bottom:24px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-display);font-stretch:140%;font-weight:900;font-size:clamp(40px,7.5vw,84px);line-height:.9;margin:8px 0 14px;letter-spacing:-.01em;text-wrap:balance}
+h1 em{font-style:normal;color:var(--accent)}
+.dek{max-width:58ch;margin:0;color:var(--muted);font-size:16px}
+.mastlinks{margin-top:14px;display:flex;gap:10px;flex-wrap:wrap}
+.prop{background:var(--surface);border:1.5px solid var(--ink);padding:16px 18px;position:relative;font-size:14px}
+.prop h2{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;margin:0 0 8px;font-weight:600}
+.prop p{margin:0 0 10px;font-weight:600}
+.boxes{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:10px}
+.box{display:flex;align-items:center;gap:8px}
+.box i{width:20px;height:20px;border:1.5px solid var(--ink);display:grid;place-items:center;font-style:normal;font-weight:700;color:var(--accent);font-size:17px;line-height:1}
+.prop small{color:var(--muted);font-family:var(--f-mono);font-size:12px}
+.stamp{position:absolute;right:-10px;top:-16px;transform:rotate(9deg);border:3px solid var(--accent);color:var(--accent);
+  font-family:var(--f-display);font-stretch:120%;font-weight:900;font-size:15px;letter-spacing:.08em;padding:4px 10px;background:var(--surface);opacity:.92}
+
+.game{display:grid;grid-template-columns:minmax(0,600px) minmax(0,1fr);gap:28px;align-items:start}
+.boardcol{display:flex;flex-direction:column;gap:12px;min-width:0}
+.status{font-family:var(--f-display);font-stretch:115%;font-weight:800;font-size:20px;min-height:30px;display:flex;align-items:center;gap:10px}
+.status .dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--ink);flex:none}
+.status.alert{color:var(--alert)}
+.boardwrap{position:relative;width:100%;max-width:600px}
+.board{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);aspect-ratio:1;width:100%;max-width:100%;border:2px solid var(--ink);user-select:none}
+.sq{position:relative;border:0;padding:0;margin:0;display:grid;place-items:center;cursor:pointer;background:var(--sq-light)}
+.sq.d{background:var(--sq-dark)}
+.sq.last::before{content:"";position:absolute;inset:0;background:var(--last)}
+.sq.sel::before{content:"";position:absolute;inset:0;background:var(--accent-soft);box-shadow:inset 0 0 0 3px var(--accent)}
+.sq.chk::before{content:"";position:absolute;inset:0;background:radial-gradient(circle,var(--alert-soft) 30%,transparent 72%)}
+.sq .tgt{position:absolute;width:26%;height:26%;border-radius:50%;background:var(--accent);opacity:.55;z-index:2;pointer-events:none}
+.sq .tgt.cap{width:88%;height:88%;background:transparent;border:4px solid var(--accent);opacity:.7}
+.sq .tgt.no{width:88%;height:88%;background:transparent;border:4px dashed var(--alert);opacity:.85}
+.coord{position:absolute;font-family:var(--f-mono);font-size:10px;color:var(--muted);pointer-events:none;z-index:1}
+.coord.f{right:3px;bottom:1px}.coord.r{left:3px;top:1px}
+.tok{position:relative;z-index:1;width:80%;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;border:2px solid;transition:transform .12s}
+.tok.w{background:var(--a-fill);color:var(--a-ink);border-color:var(--a-edge);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.tok.b{background:var(--b-fill);color:var(--b-ink);border-color:var(--b-edge);box-shadow:0 2px 0 rgba(0,0,0,.28)}
+.tok svg{width:76%;height:76%;fill:none;stroke:currentColor;stroke-width:2.7;stroke-linecap:round;stroke-linejoin:round}
+.tok svg text{fill:currentColor;stroke:none;font-family:var(--f-body);font-weight:700}
+.tok .pip{position:absolute;right:-3%;bottom:-3%;width:30%;height:30%;border-radius:50%;border:2px solid var(--surface)}
+.pip.a,.fac.a{background:var(--pine)}.pip.b,.fac.b{background:var(--anch)}
+.tok .strk{position:absolute;left:50%;top:-14%;transform:translateX(-50%) rotate(-6deg);background:var(--alert);color:#fff;font:700 9px/1 var(--f-mono);letter-spacing:.06em;padding:2px 4px;border-radius:2px;white-space:nowrap}
+.tok.struck{opacity:.6}
+.sq:hover .tok{transform:translateY(-1px)}
+.overlay{position:absolute;inset:0;display:grid;place-items:center;background:rgba(10,12,18,.42);z-index:5;padding:16px}
+.card{background:var(--surface);border:2px solid var(--ink);padding:20px 22px;max-width:380px;width:100%;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
+.card h3{font-family:var(--f-display);font-stretch:130%;font-weight:900;font-size:26px;margin:0;line-height:1;text-wrap:balance}
+.card p{margin:0;color:var(--muted);font-size:14px}
+.promos{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;width:100%}
+.promos button{display:flex;align-items:center;gap:10px;padding:6px 8px;border:1.5px solid var(--rule);background:var(--bg);cursor:pointer;text-align:left;font-weight:600;font-size:13px}
+.promos button:hover{border-color:var(--accent)}
+.promos .tok{width:32px;flex:none}
+.trays{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tray{font-size:12px;color:var(--muted);min-width:0}
+.tray .row{display:flex;flex-wrap:wrap;gap:3px;min-height:24px;margin-top:4px}
+.tray .tok{width:22px;border-width:1.5px;box-shadow:none}
+.tray .tok .pip{display:none}
+
+.panel{display:flex;flex-direction:column;gap:20px;min-width:0}
+.sect-label{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:600}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1.5px solid var(--ink)}
+.seg button{border:0;background:var(--surface);padding:9px 10px;cursor:pointer;font-weight:600;font-size:13px;line-height:1.25}
+.seg button+button{border-left:1.5px solid var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.ctrls{display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:1.5px solid var(--ink);background:var(--surface);padding:8px 12px;cursor:pointer;font-weight:600;font-size:13px}
+.btn:hover:not(:disabled){background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary{background:var(--ink);color:var(--bg)}
+.toggle{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;cursor:pointer}
+.toggle input{width:18px;height:18px;accent-color:var(--accent)}
+.poll{display:flex;flex-direction:column;gap:6px;font-variant-numeric:tabular-nums}
+.pollbar{display:flex;height:22px;border:1.5px solid var(--ink);overflow:hidden}
+.pollbar span{display:block;height:100%;transition:width .5s ease}
+.pollbar .pa{background:var(--a-fill)}
+.pollbar .pb{background:var(--b-fill)}
+.pollrow{display:flex;justify-content:space-between;font-size:13px;font-weight:600}
+.pollrow small{font-family:var(--f-mono);font-weight:400;color:var(--muted);font-size:11px}
+.news{background:var(--surface);border:1.5px solid var(--ink);display:flex;flex-direction:column;max-height:380px}
+.news header{display:flex;justify-content:space-between;align-items:baseline;padding:10px 14px;border-bottom:3px double var(--rule)}
+.news header b{font-family:var(--f-display);font-stretch:150%;font-weight:900;font-size:20px;letter-spacing:.01em}
+.news header span{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.news ol{list-style:none;margin:0;padding:0;overflow-y:auto}
+.news li{padding:9px 14px;border-bottom:1px solid var(--rule);font-size:14px;display:grid;grid-template-columns:58px minmax(0,1fr);gap:10px}
+.news li:first-child{background:var(--accent-soft)}
+.news li .mv{font-family:var(--f-mono);font-size:11px;color:var(--muted);padding-top:2px}
+.news li.check .t,.news li.end .t{color:var(--alert);font-weight:600}
+.news li .t::before{font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;margin-right:6px}
+.news li.scandal .t::before{content:"SCANDAL";color:var(--alert)}
+.news li.election .t::before{content:"ELECTION";color:var(--accent)}
+.news li.chaos .t::before{content:"FRICTION";color:var(--accent)}
+.news li.strike .t::before{content:"STRIKE";color:var(--alert)}
+
+.const h2{font-family:var(--f-display);font-stretch:140%;font-weight:900;font-size:clamp(28px,4.5vw,44px);margin:0 0 6px;line-height:1}
+.const h3.art{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:28px 0 10px;font-weight:600}
+.const > p{margin:0 0 20px;color:var(--muted);max-width:62ch}
+.cabinet{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1.5px solid var(--ink);border-left:1.5px solid var(--ink)}
+.office{padding:16px 18px;border-right:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);background:var(--surface);display:grid;grid-template-columns:44px minmax(0,1fr);gap:4px 12px;align-content:start}
+.office .tok{width:44px;grid-row:span 3}
+.office h4{margin:0;font-family:var(--f-display);font-stretch:125%;font-weight:800;font-size:19px;line-height:1.1}
+.office .was{font-family:var(--f-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.office .moves{font-size:13px;font-weight:600}
+.office p{grid-column:1/-1;margin:8px 0 0;font-size:14px;color:var(--muted)}
+.office.ghost{background:transparent}
+.office.ghost .tok{opacity:.45;border-style:dashed}
+.friction{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.friction div{background:var(--surface);border:1.5px solid var(--ink);padding:14px 16px;font-size:14px}
+.friction b{display:block;font-family:var(--f-display);font-stretch:120%;font-weight:800;font-size:18px;margin-bottom:4px}
+.friction p{margin:0;color:var(--muted)}
+.facs{display:flex;gap:16px;flex-wrap:wrap;margin:0 0 14px;font-size:13px;font-weight:600}
+.facs span{display:flex;align-items:center;gap:6px}
+.fac{width:12px;height:12px;border-radius:50%;display:inline-block}
+.gloss{margin-top:8px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 32px}
+.gloss div{display:grid;grid-template-columns:minmax(0,9em) minmax(0,1fr);gap:12px;padding:9px 0;border-bottom:1px solid var(--rule);font-size:14px}
+.gloss dt{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--alert);text-decoration-thickness:2px}
+.gloss dt.new{text-decoration:none}
+.gloss dd{margin:0;font-weight:600}
+.gloss dd small{display:block;font-weight:400;color:var(--muted)}
+footer{font-family:var(--f-mono);font-size:12px;color:var(--muted);border-top:1px solid var(--rule);padding-top:14px}
+
+.intro{position:fixed;inset:0;z-index:100;background:#000}
+.intro iframe{width:100%;height:100%;border:0;display:block}
+.skip{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));z-index:2;
+  background:rgba(20,22,28,.8);color:#EEF0F4;border:1.5px solid rgba(255,255,255,.35);padding:8px 14px;border-radius:999px;font:600 13px var(--f-body);cursor:pointer}
+.skip:hover{border-color:#F5C451;color:#F5C451}
+
+@media (max-width:900px){
+  .game{grid-template-columns:minmax(0,1fr)}
+  .boardwrap{margin:0 auto}
+  .mast{grid-template-columns:minmax(0,1fr)}
+  .cabinet{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .friction{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:560px){
+  .cabinet{grid-template-columns:minmax(0,1fr)}
+  .gloss{grid-template-columns:minmax(0,1fr)}
+  .stamp{right:6px}
+  .coord{font-size:8px}
+  .status{font-size:17px}
+  .tok .strk{font-size:7px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="mast">
+    <div>
+      <div class="eyebrow">Official ballot · Board of Elections · Form 64-SQ</div>
+      <h1>Democratic <em>Chess</em></h1>
+      <p class="dek">Chess still runs on a King and a Queen. That's a medieval arrangement for a game played in 2026. So the pieces held a referendum, abolished the crown, and wrote a constitution. The rules of movement survived. The Citizens, it turns out, don't all agree with each other.</p>
+      <div class="mastlinks"><button class="btn" id="btnIntro" type="button">Watch the intro</button></div>
+    </div>
+    <div class="prop" aria-label="Referendum result">
+      <span class="stamp">PASSED</span>
+      <h2>Proposition 1</h2>
+      <p>Shall the King and Queen be abolished and replaced by elected and unelected officials?</p>
+      <div class="boxes"><span class="box"><i>✕</i> Yes</span><span class="box"><i></i> No</span></div>
+      <small>Result: 32 – 0. Turnout 100%. Observers called it "suspiciously unanimous."</small>
+    </div>
+  </header>
+
+  <section class="game" aria-label="Game">
+    <div class="boardcol">
+      <div class="status" id="status" role="status" aria-live="polite"></div>
+      <div class="boardwrap">
+        <div class="board" id="board" role="grid" aria-label="Board"></div>
+        <div class="overlay" id="overlay" hidden></div>
+      </div>
+      <div class="trays">
+        <div class="tray"><div>Incumbents retired to the lecture circuit</div><div class="row" id="trayW"></div></div>
+        <div class="tray"><div>Opposition retired to the lecture circuit</div><div class="row" id="trayB"></div></div>
+      </div>
+    </div>
+
+    <aside class="panel">
+      <div>
+        <div class="sect-label">System of government</div>
+        <div class="seg" role="group" aria-label="Game mode">
+          <button id="modeAi" type="button">vs. the Opposition<br><small>you vs. computer</small></button>
+          <button id="modePvp" type="button">Two-party system<br><small>2 players, 1 device</small></button>
+        </div>
+      </div>
+      <div>
+        <div class="sect-label">Parliamentary procedure</div>
+        <div class="ctrls">
+          <button class="btn" id="btnUndo" type="button" title="Undo the last move">Demand a recount</button>
+          <button class="btn" id="btnFil" type="button" title="Skip your turn, once per game">Filibuster</button>
+          <button class="btn primary" id="btnNew" type="button">Call a new election</button>
+        </div>
+      </div>
+      <label class="toggle" for="chaos"><input type="checkbox" id="chaos" checked> Political friction (Citizens have opinions)</label>
+      <div class="poll">
+        <div class="sect-label" style="margin:0">Approval rating</div>
+        <div class="pollrow"><span>Incumbents <span id="pa">50%</span></span><span><span id="pb">50%</span> Opposition</span></div>
+        <div class="pollbar" aria-hidden="true"><span class="pa" id="barA" style="width:50%"></span><span class="pb" id="barB" style="width:50%"></span></div>
+        <div class="pollrow"><small>Sample: 32 pieces</small><small>Margin of error ±∞</small></div>
+      </div>
+      <section class="news" aria-label="News">
+        <header><b>The Daily Ballot</b><span id="edition">Edition 1</span></header>
+        <ol id="news"></ol>
+      </section>
+    </aside>
+  </section>
+
+  <section class="const" aria-labelledby="constH">
+    <h2 id="constH">The New Constitution</h2>
+    <p>Each office moves exactly like the piece it replaced. The movement rules were the one thing every side agreed on.</p>
+    <h3 class="art">Article I · The cabinet</h3>
+    <div class="cabinet" id="cabinet"></div>
+
+    <h3 class="art">Article II · Political friction</h3>
+    <div class="facs"><span><i class="fac a"></i> Pineapple Party</span><span><i class="fac b"></i> Anchovy Alliance</span><span style="font-weight:400;color:var(--muted)">Every Citizen belongs to one. Both sides have both.</span></div>
+    <div class="friction">
+      <div><b>Not my party</b><p>When one of your Citizens is captured, your Citizens from the other party won't recapture on that square. Their move shows a red dashed ring.</p></div>
+      <div><b>Conscientious objection</b><p>Any Citizen move has a 1-in-8 chance of being refused. Your turn isn't lost. You just have to ask someone else.</p></div>
+      <div><b>General strike</b><p>Every six moves, a random Citizen walks off the job for three turns. Striking Citizens can't move, but they still glare.</p></div>
+    </div>
+
+    <h3 class="art">Article III · Procedure</h3>
+    <dl class="gloss">
+      <div><dt>Check</dt><dd>Under Investigation<small>Your President must respond before doing anything else.</small></dd></div>
+      <div><dt>Checkmate</dt><dd>Vote of No Confidence<small>The government falls. The other side forms one.</small></dd></div>
+      <div><dt>Castling</dt><dd>Coalition Deal<small>President and Bureaucrat swap seats and call it reform.</small></dd></div>
+      <div><dt>En passant</dt><dd>Gerrymandering<small>A Citizen is captured by redrawing where it was standing.</small></dd></div>
+      <div><dt>Promotion</dt><dd>The Revolving Door<small>A Citizen who reaches the capital becomes anything except President.</small></dd></div>
+      <div><dt>Stalemate</dt><dd>Gridlock<small>No legal moves. Nothing passes. Everyone goes home.</small></dd></div>
+      <div><dt>Undo</dt><dd>Recount<small>The last move is ruled to have never happened.</small></dd></div>
+      <div><dt class="new">(new)</dt><dd>Filibuster<small>Skip your turn by talking for a very long time. Once per game. Not allowed while under investigation.</small></dd></div>
+    </dl>
+  </section>
+
+  <footer>Paid for by the Committee to Re-Elect Nobody. All pieces, parties and scandals are fictional.</footer>
+</div>
+
+<div class="intro" id="intro" hidden>
+  <iframe id="introFrame" title="Intro reel" allow="autoplay"></iframe>
+  <button class="skip" id="skipIntro" type="button">Skip intro</button>
+</div>
+<script type="text/plain" id="introSrc">__INTRO__</script>
+
+<script>
+(function(){
+const SIDE={w:'Incumbents',b:'Opposition'};
+const FAC={a:'Pineapple Party',b:'Anchovy Alliance'};
+const ICON={
+  k:'<path d="M20 6v10.5M20 6h9l-2 3 2 3h-9M14 33l2-9h8l2 9zM11 33h18"/><circle cx="20" cy="20" r="3.5"/>',
+  q:'<path d="M5 29.5c0-2 7-3.2 15-3.2s15 1.2 15 3.2-7 3.2-15 3.2-15-1.2-15-3.2z"/><path d="M12.5 27V8.5c0-1.2 3.4-2.2 7.5-2.2s7.5 1 7.5 2.2V27"/><rect x="12.5" y="20" width="15" height="4.2" fill="currentColor" stroke="none"/>',
+  b:'<rect x="8" y="14" width="24" height="17" rx="3"/><path d="M14 7l6 7 6-7"/><path d="M13 23q3.5-5 7 0t7 0"/>',
+  nL:'<path d="M20 8v24M13 32h14M9 12h22"/><path d="M9 12 5 21h8zM31 12l-4 9h8z"/>',
+  nY:'<rect x="7" y="14" width="26" height="17" rx="3"/><path d="M15 14v-3a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3"/><text x="20" y="28" font-size="12" text-anchor="middle">$</text>',
+  r:'<path d="M7 16 20 8l13 8z"/><path d="M11 19v10M17 19v10M23 19v10M29 19v10M7 32h26"/>',
+  p:'<circle cx="20" cy="13" r="5"/><path d="M10 32c0-6.5 4.5-10 10-10s10 3.5 10 10"/>'
+};
+const NAMES={k:'President',q:'Oligarch',b:'Media',nL:'Lawyer',nY:'Lobbyist',r:'Bureaucrat',p:'Citizen'};
+const roleOf=p=>p[1]==='n'?'n'+(p[2]==='Y'?'Y':'L'):p[1];
+const nameOf=p=>NAMES[roleOf(p)];
+const pid=p=>p.slice(3);
+let CHAOS=true;
+function tok(c,role,opts){opts=opts||{};
+  return '<span class="tok '+c+(opts.struck?' struck':'')+'"><svg viewBox="0 0 40 40" aria-hidden="true">'+ICON[role]+'</svg>'+
+    (opts.fac?'<span class="pip '+opts.fac+'"></span>':'')+(opts.struck?'<span class="strk">STRIKE</span>':'')+'</span>';}
+function tokP(p,s){const struck=s&&s.strike[pid(p)]>s.ply;return tok(p[0],roleOf(p),{fac:p[1]==='p'&&CHAOS?p[2]:null,struck:struck&&CHAOS});}
+
+/* ---------- Engine ---------- */
+const KN=[[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
+const KG=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+const DG=[[-1,-1],[-1,1],[1,-1],[1,1]], OR=[[-1,0],[1,0],[0,-1],[0,1]];
+const opp=c=>c==='w'?'b':'w';
+const inb=(r,f)=>r>=0&&r<8&&f>=0&&f<8;
+const is=(p,c,t)=>!!p&&p[0]===c&&p[1]===t;
+let UID=0;
+function shuffled(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function initialState(){
+  const b=Array(64).fill(null),back='rnbqkbnr',fw=shuffled(['a','a','a','a','b','b','b','b']),fb=shuffled(['a','a','a','a','b','b','b','b']);
+  const x=(t,f)=>t==='n'?(f===1?'L':'Y'):'-';
+  for(let f=0;f<8;f++){
+    b[f]='b'+back[f]+x(back[f],f)+(UID++);b[8+f]='bp'+fb[f]+(UID++);
+    b[48+f]='wp'+fw[f]+(UID++);b[56+f]='w'+back[f]+x(back[f],f)+(UID++);
+  }
+  return {b,turn:'w',cr:{wK:1,wQ:1,bK:1,bQ:1},ep:-1,ply:0,fil:{w:1,b:1},lc:null,strike:{}};
+}
+const kingSq=(b,c)=>b.findIndex(p=>is(p,c,'k'));
+function attacked(b,sq,by){
+  const r=sq>>3,f=sq&7,pr=by==='w'?r+1:r-1;
+  if(pr>=0&&pr<8)for(const df of[-1,1]){const ff=f+df;if(ff>=0&&ff<8&&is(b[pr*8+ff],by,'p'))return true;}
+  for(const[dr,df]of KN){const rr=r+dr,ff=f+df;if(inb(rr,ff)&&is(b[rr*8+ff],by,'n'))return true;}
+  for(const[dr,df]of KG){const rr=r+dr,ff=f+df;if(inb(rr,ff)&&is(b[rr*8+ff],by,'k'))return true;}
+  for(const[dr,df]of DG){let rr=r+dr,ff=f+df;while(inb(rr,ff)){const p=b[rr*8+ff];if(p){if(p[0]===by&&(p[1]==='b'||p[1]==='q'))return true;break;}rr+=dr;ff+=df;}}
+  for(const[dr,df]of OR){let rr=r+dr,ff=f+df;while(inb(rr,ff)){const p=b[rr*8+ff];if(p){if(p[0]===by&&(p[1]==='r'||p[1]==='q'))return true;break;}rr+=dr;ff+=df;}}
+  return false;
+}
+const PROMOS=['q','r','b','L','Y'];
+function pseudo(s){
+  const out=[],b=s.b,c=s.turn,o=opp(c);
+  const push=(from,to,promo)=>{if(promo){for(const x of PROMOS)out.push({from,to,promo:x});}else out.push({from,to});};
+  for(let sq=0;sq<64;sq++){
+    const p=b[sq];if(!p||p[0]!==c)continue;
+    if(CHAOS&&s.strike[pid(p)]>s.ply)continue;
+    const t=p[1],r=sq>>3,f=sq&7;
+    if(t==='p'){
+      const dir=c==='w'?-1:1,start=c==='w'?6:1,last=c==='w'?0:7,r1=r+dir;
+      if(r1<0||r1>7)continue;
+      if(!b[r1*8+f]){push(sq,r1*8+f,r1===last);if(r===start&&!b[(r+2*dir)*8+f])out.push({from:sq,to:(r+2*dir)*8+f,dbl:1});}
+      for(const df of[-1,1]){const ff=f+df;if(ff<0||ff>7)continue;const to=r1*8+ff;
+        if(b[to]&&b[to][0]===o)push(sq,to,r1===last);else if(to===s.ep)out.push({from:sq,to,ep:1});}
+    }else if(t==='n'||t==='k'){
+      for(const[dr,df]of(t==='n'?KN:KG)){const rr=r+dr,ff=f+df;if(!inb(rr,ff))continue;const to=rr*8+ff;if(!b[to]||b[to][0]===o)out.push({from:sq,to});}
+      if(t==='k'){const home=c==='w'?60:4;
+        if(sq===home&&!attacked(b,home,o)){
+          if(s.cr[c+'K']&&!b[home+1]&&!b[home+2]&&is(b[home+3],c,'r')&&!attacked(b,home+1,o)&&!attacked(b,home+2,o))out.push({from:sq,to:home+2,castle:1});
+          if(s.cr[c+'Q']&&!b[home-1]&&!b[home-2]&&!b[home-3]&&is(b[home-4],c,'r')&&!attacked(b,home-1,o)&&!attacked(b,home-2,o))out.push({from:sq,to:home-2,castle:1});
+        }}
+    }else{
+      const dirs=t==='b'?DG:t==='r'?OR:DG.concat(OR);
+      for(const[dr,df]of dirs){let rr=r+dr,ff=f+df;while(inb(rr,ff)){const to=rr*8+ff;if(b[to]){if(b[to][0]===o)out.push({from:sq,to});break;}out.push({from:sq,to});rr+=dr;ff+=df;}}
+    }
+  }
+  return out;
+}
+function make(s,m){
+  const b=s.b.slice(),p=b[m.from],c=p[0],capSq=m.ep?m.to+(c==='w'?8:-8):m.to,victim=b[capSq];
+  let np=p;if(m.promo)np=c+((m.promo==='L'||m.promo==='Y')?'n'+m.promo:m.promo+'-')+'x'+m.to+'_'+s.ply;
+  b[m.to]=np;b[m.from]=null;if(m.ep)b[capSq]=null;
+  if(m.castle){if(m.to===62){b[61]=b[63];b[63]=null;}else if(m.to===58){b[59]=b[56];b[56]=null;}else if(m.to===6){b[5]=b[7];b[7]=null;}else if(m.to===2){b[3]=b[0];b[0]=null;}}
+  const cr={...s.cr};
+  if(p[1]==='k'){cr[c+'K']=0;cr[c+'Q']=0;}
+  for(const sq of[m.from,m.to]){if(sq===63)cr.wK=0;if(sq===56)cr.wQ=0;if(sq===7)cr.bK=0;if(sq===0)cr.bQ=0;}
+  return {b,turn:opp(c),cr,ep:m.dbl?(m.from+m.to)/2:-1,ply:s.ply+1,fil:s.fil,lc:victim&&victim[1]==='p'?{sq:m.to,fac:victim[2]}:null,strike:s.strike};
+}
+function legalAll(s){
+  const ok=[],blocked=[];
+  for(const m of pseudo(s)){
+    const n=make(s,m);if(attacked(n.b,kingSq(n.b,s.turn),n.turn))continue;
+    const p=s.b[m.from];
+    if(CHAOS&&s.lc&&m.to===s.lc.sq&&p[1]==='p'&&p[2]!==s.lc.fac)blocked.push(m);else ok.push(m);
+  }
+  return {ok,blocked};
+}
+const legal=s=>legalAll(s).ok;
+const inCheck=s=>attacked(s.b,kingSq(s.b,s.turn),opp(s.turn));
+
+/* ---------- AI ---------- */
+const VAL={p:100,n:320,b:330,r:500,q:900,k:0};
+function evalS(s){
+  let sc=0;
+  for(let i=0;i<64;i++){const p=s.b[i];if(!p)continue;const t=p[1],r=i>>3,f=i&7;let v=VAL[t];
+    if(t==='n'||t==='b')v+=(6-(Math.abs(3.5-r)+Math.abs(3.5-f)))*5;
+    if(t==='p'){const adv=p[0]==='w'?6-r:r-1;v+=adv*7+((f===3||f===4)?10:0);}
+    sc+=p[0]==='w'?v:-v;}
+  return sc;
+}
+function order(ms,s){const v=m=>(s.b[m.to]?VAL[s.b[m.to][1]]:0)+(m.promo?800:0);ms.sort((a,b)=>v(b)-v(a));return ms;}
+function search(s,d,a,bt){
+  if(d===0)return evalS(s)*(s.turn==='w'?1:-1);
+  const ms=legal(s);if(!ms.length)return inCheck(s)?-100000-d:0;
+  order(ms,s);
+  for(const m of ms){const v=-search(make(s,m),d-1,-bt,-a);if(v>a)a=v;if(a>=bt)break;}
+  return a;
+}
+function rankedMoves(s){
+  const ms=order(legal(s),s).filter(m=>!m.promo||m.promo==='q');
+  return ms.map(m=>({m,v:-search(make(s,m),2,-Infinity,Infinity)+Math.random()*14})).sort((a,b)=>b.v-a.v).map(x=>x.m);
+}
+
+/* ---------- Satire ---------- */
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const CAP={
+  q:['Oligarch acquires {X}. Terms undisclosed.','{X} is bought out by an Oligarch and leaves on a yacht.'],
+  nY:['Lobbyist hires away {X}. Lucrative consulting role.','{X} accepts a Lobbyist’s dinner invitation. Not seen since.'],
+  nL:['Lawyer finds a loophole, disqualifies {X}.','Lawyer jumps over three people in line, files suit against {X}.'],
+  b:['Media cancels {X} after a nine-minute segment.','Media’s hot take ends the career of {X}.'],
+  r:['Bureaucrat rejects {X}’s paperwork. Form 27-B was missing.','{X} dies of old age in a Bureaucrat’s waiting room.'],
+  p:['Citizen votes {X} out of office. Turnout: 1.','Grassroots upset: a Citizen unseats {X}.'],
+  k:['President personally removes {X}, calls it a cabinet reshuffle.','President fires {X} by social media post.']
+};
+const CHECK=['{S} President placed under investigation. Press office: no comment.','Inquiry opened into the {S} President. Hearings scheduled indefinitely.','{S} President subpoenaed. Must respond before doing anything else.'];
+const SCANDAL=['{S} Media caught agreeing with the other side.','Leaked memo: {S} Bureaucrat has been working from home since move 3.','{S} Lawyer bills 14 hours for one L-shaped move.','{S} Lobbyist denies that Lobbyists exist.','{S} Oligarch’s yacht spotted near an island. Media declines to cover it.','{S} Citizen discovered to be registered on two squares.'];
+const ELECTION=['Election held. Turnout 61%. Every piece still on the board kept its seat.','Midterms held. Both sides claim a mandate.','Results too close to call, for the eleventh straight move.','Election day. Citizens queue for six hours, then go back to being moved around.'];
+const THINK=['Opposition is consulting focus groups…','Opposition is workshopping a slogan…','Opposition is checking the polls…','Opposition is drafting a strongly worded statement…'];
+const REFUSE=['I didn’t vote for this.','Not until my concerns are addressed.','That square is in a different district.','Have you tried asking the Oligarch?','I’ll think about it. Possibly in the next term.','I’d rather post about it.','My party hasn’t issued guidance on that square.'];
+const STRIKE=['Demands: unclear.','Demands: a square with a view.','Demands: the same deal the Lobbyist got.','Demands: to be consulted, once.'];
+
+/* ---------- State ---------- */
+let G=null;
+const $=id=>document.getElementById(id);
+function newGame(mode){
+  G={mode:mode||(G&&G.mode)||'ai',s:initialState(),hist:[],sel:-1,targets:[],blockedT:[],last:null,over:null,log:[],drift:{w:0,b:0},thinking:false,promo:null,caps:{w:[],b:[]},thinkMsg:''};
+  news('Polls open. The monarchy is abolished. Incumbents move first, because incumbency has its advantages.','sys');
+  if(CHAOS)news('Your Citizens are split between the Pineapple Party and the Anchovy Alliance. They will not always cooperate.','chaos');
+  render();
+}
+function news(t,kind){G.log.unshift({t,kind:kind||'',ply:G.s.ply});if(G.log.length>80)G.log.pop();}
+function snapshot(){return {s:G.s,last:G.last,drift:{...G.drift},caps:{w:G.caps.w.slice(),b:G.caps.b.slice()}};}
+function restore(h){G.s=h.s;G.last=h.last;G.drift=h.drift;G.caps=h.caps;G.over=null;}
+function mat(c){let n=0;for(const p of G.s.b)if(p&&p[0]===c)n+={p:1,n:3,b:3,r:5,q:9,k:0}[p[1]];return n;}
+function approval(){return Math.max(3,Math.min(97,Math.round(50+(mat('w')-mat('b'))*2.5+G.drift.w-G.drift.b)));}
+function insufficient(b){const rest=b.filter(p=>p&&p[1]!=='k');return rest.length===0||(rest.length===1&&(rest[0][1]==='n'||rest[0][1]==='b'));}
+const citLabel=p=>SIDE[p[0]]+' Citizen ('+FAC[p[2]]+')';
+
+function maybeStrike(){
+  if(!CHAOS||G.s.ply%12!==6)return;
+  const cands=[];G.s.b.forEach(p=>{if(p&&p[1]==='p'&&!(G.s.strike[pid(p)]>G.s.ply))cands.push(p);});
+  if(!cands.length)return;
+  const p=pick(cands);
+  G.s={...G.s,strike:{...G.s.strike,[pid(p)]:G.s.ply+6}};
+  news(citLabel(p)+' walks off the job for three turns. '+pick(STRIKE),'strike');
+}
+function doMove(m){
+  G.hist.push(snapshot());
+  const before=G.s,mover=before.b[m.from],c=mover[0];
+  const victim=m.ep?before.b[m.to+(c==='w'?8:-8)]:before.b[m.to];
+  G.s=make(before,m);G.last={from:m.from,to:m.to};G.sel=-1;G.targets=[];G.blockedT=[];
+  if(m.castle)news('Coalition deal: '+SIDE[c]+' President and Bureaucrat swap seats and call it reform.');
+  if(m.ep)news('Gerrymander! '+SIDE[opp(c)]+' Citizen redistricted out of existence.');
+  else if(victim){G.caps[victim[0]].push(roleOf(victim));news(pick(CAP[roleOf(mover)]).replace('{X}','the '+SIDE[victim[0]]+' '+nameOf(victim)));}
+  if(m.promo)news('Revolving door: '+SIDE[c]+' Citizen reaches the capital and becomes a '+NAMES[m.promo==='L'?'nL':m.promo==='Y'?'nY':m.promo]+'.');
+  if(Math.random()<0.1){G.drift[c]-=2+Math.floor(Math.random()*3);news(pick(SCANDAL).replace('{S}',SIDE[c]),'scandal');}
+  if(G.s.ply%20===0)news(pick(ELECTION),'election');
+  maybeStrike();
+  const la=legalAll(G.s),ms=la.ok,chk=inCheck(G.s),t=G.s.turn;
+  if(CHAOS&&G.s.lc&&la.blocked.length){const other=G.s.lc.fac==='a'?'b':'a';
+    news('The '+SIDE[t]+' '+FAC[other]+' declines to avenge their fallen '+FAC[G.s.lc.fac]+' neighbour. “Not my party.”','chaos');}
+  if(!ms.length){
+    if(chk){G.over={kind:'mate',winner:opp(t)};news('Vote of No Confidence. The '+SIDE[t]+' government has fallen. '+SIDE[opp(t)]+' form the new government.','end');}
+    else{G.over={kind:'stale'};news('Gridlock. The '+SIDE[t]+' have no legal moves. The session adjourns with nothing passed.','end');}
+  }else if(insufficient(G.s.b)){G.over={kind:'draw'};news('Only the Presidents have enough pieces left to govern, which is none. Bipartisan photo op. Draw.','end');}
+  else if(chk)news(pick(CHECK).replace('{S}',SIDE[t]),'check');
+  render();
+  if(!G.over&&G.mode==='ai'&&G.s.turn==='b')aiTurn();
+}
+function refuses(p){return CHAOS&&p[1]==='p'&&Math.random()<0.125;}
+function aiTurn(){
+  G.thinking=true;G.thinkMsg=pick(THINK);render();
+  setTimeout(()=>{
+    const ranked=rankedMoves(G.s);let chosen=null;
+    for(const m of ranked){const p=G.s.b[m.from];
+      if(refuses(p)&&ranked.length>1&&!chosen){news(citLabel(p)+' refuses to move: “'+pick(REFUSE)+'”','chaos');continue;}
+      chosen=m;break;}
+    if(!chosen&&ranked.length)chosen=ranked[ranked.length-1];
+    G.thinking=false;if(chosen)doMove(chosen);else render();
+  },450);
+}
+function humanTurn(){return !G.over&&!G.thinking&&!G.promo&&(G.mode==='pvp'||G.s.turn==='w');}
+function clickSq(i){
+  if(!humanTurn())return;
+  const p=G.s.b[i];
+  if(G.sel>=0){
+    const opts=G.targets.filter(m=>m.to===i);
+    if(opts.length){
+      const mp=G.s.b[G.sel];
+      if(refuses(mp)){news(citLabel(mp)+' refuses to move: “'+pick(REFUSE)+'”','chaos');G.sel=-1;G.targets=[];G.blockedT=[];render();return;}
+      if(opts.length>1){G.promo=opts;render();return;}
+      doMove(opts[0]);return;}
+    const bl=G.blockedT.find(m=>m.to===i);
+    if(bl){const mp=G.s.b[G.sel],other=G.s.lc.fac;
+      news(citLabel(mp)+' won’t avenge a member of the '+FAC[other]+'. “Not my party.”','chaos');G.sel=-1;G.targets=[];G.blockedT=[];render();return;}
+  }
+  if(p&&p[0]===G.s.turn&&G.sel!==i){
+    if(CHAOS&&G.s.strike[pid(p)]>G.s.ply){news(citLabel(p)+' is on strike. Try again in '+Math.ceil((G.s.strike[pid(p)]-G.s.ply)/2)+' turn(s).','strike');G.sel=-1;G.targets=[];G.blockedT=[];render();return;}
+    const la=legalAll(G.s);G.sel=i;G.targets=la.ok.filter(m=>m.from===i);G.blockedT=la.blocked.filter(m=>m.from===i);
+  }else{G.sel=-1;G.targets=[];G.blockedT=[];}
+  render();
+}
+function canFil(){return humanTurn()&&G.s.fil[G.s.turn]>0&&!inCheck(G.s);}
+function filibuster(){
+  if(!canFil())return;
+  const c=G.s.turn;G.hist.push(snapshot());
+  G.s={...G.s,turn:opp(c),ep:-1,ply:G.s.ply+1,lc:null,fil:{...G.s.fil,[c]:0}};
+  G.last=null;G.sel=-1;G.targets=[];G.blockedT=[];
+  news('Filibuster! The '+SIDE[c]+' read the tax code aloud for one full turn. Nothing moves.');
+  render();
+  if(G.mode==='ai'&&G.s.turn==='b')aiTurn();
+}
+function recount(){
+  if(G.thinking||!G.hist.length)return;
+  G.promo=null;restore(G.hist.pop());
+  while(G.mode==='ai'&&G.s.turn!=='w'&&G.hist.length)restore(G.hist.pop());
+  G.sel=-1;G.targets=[];G.blockedT=[];
+  news('Recount demanded. The last move is officially ruled to have never happened.');
+  render();
+}
+
+/* ---------- Render ---------- */
+const boardEl=$('board'),sqs=[];
+for(let i=0;i<64;i++){
+  const btn=document.createElement('button');btn.type='button';btn.className='sq'+(((i>>3)+(i&7))%2?' d':'');
+  btn.addEventListener('click',()=>clickSq(i));boardEl.appendChild(btn);sqs.push(btn);
+}
+const sqName=i=>'abcdefgh'[i&7]+(8-(i>>3));
+function render(){
+  const s=G.s,chkSq=inCheck(s)?kingSq(s.b,s.turn):-1;
+  const tgt=new Map(G.targets.map(m=>[m.to,m])),blk=new Set(G.blockedT.map(m=>m.to));
+  for(let i=0;i<64;i++){
+    const btn=sqs[i],p=s.b[i],r=i>>3,f=i&7;
+    let cls='sq'+((r+f)%2?' d':'');
+    if(G.last&&(G.last.from===i||G.last.to===i))cls+=' last';
+    if(G.sel===i)cls+=' sel';
+    if(i===chkSq)cls+=' chk';
+    btn.className=cls;
+    let h='';
+    if(f===0)h+='<span class="coord r">'+(8-r)+'</span>';
+    if(r===7)h+='<span class="coord f">'+'abcdefgh'[f]+'</span>';
+    if(p)h+=tokP(p,s);
+    if(tgt.has(i))h+='<span class="tgt'+(p||tgt.get(i).ep?' cap':'')+'"></span>';
+    else if(blk.has(i))h+='<span class="tgt no"></span>';
+    btn.innerHTML=h;
+    btn.setAttribute('aria-label',sqName(i)+(p?', '+SIDE[p[0]]+' '+nameOf(p)+(p[1]==='p'&&CHAOS?', '+FAC[p[2]]:''):', empty')+(tgt.has(i)?', legal move':blk.has(i)?', refused: not my party':''));
+  }
+  const st=$('status'),t=s.turn;let msg,alert=false;
+  if(G.over)msg=G.over.kind==='mate'?SIDE[G.over.winner]+' win. The other government has fallen.':G.over.kind==='stale'?'Gridlock. Nobody wins, as usual.':'Draw by mutual irrelevance.';
+  else if(G.thinking)msg=G.thinkMsg;
+  else{const who=G.mode==='ai'?(t==='w'?'Your move, Incumbents':'Opposition to move'):SIDE[t]+' to move';
+    if(chkSq>=0){msg=who+'. Your President is under investigation.';alert=true;}else msg=who;}
+  st.className='status'+(alert?' alert':'');
+  st.innerHTML='<span class="dot" style="background:var('+(t==='w'?'--a-fill':'--b-fill')+')"></span><span>'+msg+'</span>';
+  const ov=$('overlay');
+  if(G.promo){
+    ov.hidden=false;const c=s.turn;
+    ov.innerHTML='<div class="card"><h3>The Revolving Door</h3><p>Your Citizen reached the capital. Pick a new career. President is not on the list.</p><div class="promos">'+
+      [['q','q'],['r','r'],['b','b'],['L','nL'],['Y','nY']].map(([x,role])=>'<button type="button" data-p="'+x+'">'+tok(c,role)+NAMES[role]+'</button>').join('')+'</div></div>';
+    ov.querySelectorAll('[data-p]').forEach(b=>b.addEventListener('click',()=>{const m=G.promo.find(mm=>mm.promo===b.dataset.p);G.promo=null;doMove(m);}));
+  }else if(G.over){
+    ov.hidden=false;
+    const title=G.over.kind==='mate'?'Vote of No Confidence':G.over.kind==='stale'?'Gridlock':'Bipartisan Photo Op';
+    const sub=G.over.kind==='mate'?'The '+SIDE[opp(G.over.winner)]+' government has fallen. The '+SIDE[G.over.winner]+' take office and immediately start blaming their predecessors.':G.over.kind==='stale'?'No legal moves. Nothing was passed. Everyone gets re-elected anyway.':'Two Presidents, no one left to govern. They shake hands for the cameras.';
+    ov.innerHTML='<div class="card"><h3>'+title+'</h3><p>'+sub+'</p><div class="ctrls" style="justify-content:center"><button class="btn" type="button" id="ovUndo">Demand a recount</button><button class="btn primary" type="button" id="ovNew">Call a new election</button></div></div>';
+    $('ovNew').addEventListener('click',()=>newGame());$('ovUndo').addEventListener('click',recount);
+  }else{ov.hidden=true;ov.innerHTML='';}
+  const sortC=a=>a.slice().sort((x,y)=>VAL[y[0]]-VAL[x[0]]);
+  $('trayW').innerHTML=sortC(G.caps.w).map(r=>tok('w',r)).join('');
+  $('trayB').innerHTML=sortC(G.caps.b).map(r=>tok('b',r)).join('');
+  $('modeAi').setAttribute('aria-pressed',G.mode==='ai');$('modePvp').setAttribute('aria-pressed',G.mode==='pvp');
+  $('btnUndo').disabled=G.thinking||!G.hist.length;
+  const fb=$('btnFil');fb.disabled=!canFil();fb.textContent=G.s.fil[G.s.turn]>0?'Filibuster (1 left)':'Filibuster (used)';
+  const a=approval();$('pa').textContent=a+'%';$('pb').textContent=(100-a)+'%';$('barA').style.width=a+'%';$('barB').style.width=(100-a)+'%';
+  $('edition').textContent='Edition '+(Math.floor(s.ply/2)+1);
+  $('news').innerHTML=G.log.map(n=>'<li class="'+n.kind+'"><span class="mv">'+(n.ply?'Move '+Math.ceil(n.ply/2):'Opening')+'</span><span class="t">'+n.t+'</span></li>').join('');
+}
+
+/* ---------- Cabinet ---------- */
+const OFFICES=[
+  ['k','President','King','One square, any direction','Everyone’s entire job is protecting this piece, which moves one square per turn and accomplishes very little.'],
+  ['q','Oligarch','Queen','Any distance, any direction','The most powerful piece on the board. Nobody voted for it.'],
+  ['b','Media','Bishops','Diagonals only','Two channels. Each one only ever sees its own color, for the entire game.'],
+  ['nL','Lawyer','Knight (b-file)','L-shape, jumps over pieces','Jumps over everyone else. Finds loopholes no one else can see.'],
+  ['nY','Lobbyist','Knight (g-file)','L-shape, jumps over pieces','Also jumps. Straight to the President.'],
+  ['r','Bureaucrat','Rooks','Straight lines only','Moves strictly through proper channels. The two of them have never met.'],
+  ['p','Citizen','Pawns','Forward one, captures diagonally','The most numerous and most expendable. Can never move backward. Has opinions.'],
+  ['p','Police','Not on the board','—','Not a separate piece. Just Citizens in helmets. You’ll see.']
+];
+$('cabinet').innerHTML=OFFICES.map(([role,name,was,mv,q],i)=>'<div class="office'+(i===7?' ghost':'')+'">'+tok('w',role)+'<span class="was">'+(i===7?was:'Formerly the '+was)+'</span><h4>'+name+'</h4><span class="moves">'+mv+'</span><p>'+q+'</p></div>').join('');
+
+$('modeAi').addEventListener('click',()=>{if(G.mode!=='ai')newGame('ai');});
+$('modePvp').addEventListener('click',()=>{if(G.mode!=='pvp')newGame('pvp');});
+$('btnNew').addEventListener('click',()=>newGame());
+$('btnUndo').addEventListener('click',recount);
+$('btnFil').addEventListener('click',filibuster);
+$('chaos').addEventListener('change',e=>{CHAOS=e.target.checked;G.sel=-1;G.targets=[];G.blockedT=[];
+  news(CHAOS?'Political friction restored. Citizens remember they have opinions.':'Political friction suspended. Citizens agree on everything, briefly.','chaos');render();});
+
+/* ---------- Intro overlay ---------- */
+const intro=$('intro'),frame=$('introFrame');
+function openIntro(){
+  const src=$('introSrc').textContent.replace(/<\\\/script/g,'</'+'script');
+  if(src.indexOf('__INTRO__')>-1&&src.length<20)return;
+  frame.srcdoc='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><script>window.INTRO_MODE=true<\/script></head><body>'+src+'</body></html>';
+  intro.hidden=false;document.body.style.overflow='hidden';$('skipIntro').focus();
+}
+function closeIntro(){intro.hidden=true;frame.srcdoc='';document.body.style.overflow='';try{localStorage.setItem('dc-intro-seen','1');}catch(e){}}
+$('skipIntro').addEventListener('click',closeIntro);
+$('btnIntro').addEventListener('click',openIntro);
+window.addEventListener('message',e=>{if(e.data==='dc-intro-done')closeIntro();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!intro.hidden)closeIntro();});
+
+newGame('ai');
+let seen=null;try{seen=localStorage.getItem('dc-intro-seen');}catch(e){}
+if(!seen)openIntro();
+})();
+</script>
